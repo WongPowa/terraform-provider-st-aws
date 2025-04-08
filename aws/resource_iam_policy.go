@@ -883,13 +883,11 @@ func (r *iamPolicyResource) removePolicy(ctx context.Context, state *iamPolicyRe
 			// the policy. Refer to the below offcial IAM documents:
 			// https://docs.aws.amazon.com/IAM/latest/APIReference/API_DeletePolicy.html
 			if listPolicyVersionsResponse, err = r.client.ListPolicyVersions(ctx, listPolicyVersionsRequest); err != nil {
-				if errors.As(err, &ae) {
-					// Ignore error where the policy version does
-					// not exists in the policy as it was intended
-					// to delete the policy version.
-					if ae.ErrorCode() != "NoSuchEntity" {
-						return handleAPIError(err)
-					}
+				// Ignore error where the policy version does
+				// not exists in the policy as it was intended
+				// to delete the policy version.
+				if errors.As(err, &ae) && ae.ErrorCode() != "NoSuchEntity" {
+					return handleAPIError(err)
 				}
 			}
 
